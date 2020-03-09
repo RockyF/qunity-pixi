@@ -1,0 +1,21 @@
+{
+  "name": "qunity-pixi",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "browser": "./dist/index.es.js",
+  "types": "./types/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/pixi.js": "^5.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-typescript": "^1.0.1",
+    "rollup-plugin-uglify": "^6.0.4",
+    "tslib": "^1.11.1",
+    "typescript": "^3.8.3"
+  }
+}

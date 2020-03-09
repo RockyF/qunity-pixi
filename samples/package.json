@@ -1,0 +1,16 @@
+{
+  "name": "samples",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "pixi.js": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/pixi.js": "^5.0.0"
+  }
+}
