@@ -4,7 +4,7 @@
 
 import PIXI from 'pixi.js'
 import {traverse} from "./utils";
-import {Application, IEntity, IComponent, Component as QComponent} from 'qunity'
+import {Application, IEntity, Component as QComponent} from 'qunity'
 import {EntityAdaptor} from "./EntityAdaptor";
 import {getRes, loadResource} from "./res";
 
@@ -38,7 +38,7 @@ export function launchApp(): Application {
 		loadResourceFunc: loadResource,
 		getResFunc: getRes,
 	});
-	pixiApp.ticker.add(mainLoop);
+	PIXI.Ticker.shared.add(mainLoop);
 
 	return app;
 }
@@ -51,7 +51,7 @@ export function createEntity(type: string): IPixiEntity {
 	return <IPixiEntity>app.createEntity(type);
 }
 
-export class Component extends QComponent implements IComponent {
+export class Component extends QComponent {
 	get entity(): IPixiEntity {
 		return <IPixiEntity>this.entityAdaptor.entity;
 	}

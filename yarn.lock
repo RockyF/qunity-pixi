@@ -520,6 +520,10 @@ querystring@0.2.0:
   resolved "https://registry.npm.taobao.org/querystring/download/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
   integrity sha1-sgmEkgO7Jd+CDadW50cAWHhSFiA=
 
+"qunity@https://github.com/RockyF/qunity":
+  version "1.0.0"
+  resolved "https://github.com/RockyF/qunity#ee8b56e15d3e0187055b4a809b003b4b3b438866"
+
 resolve@^1.10.0, resolve@^1.11.1:
   version "1.15.1"
   resolved "https://registry.npm.taobao.org/resolve/download/resolve-1.15.1.tgz#27bdcdeffeaf2d6244b95bb0f9f4b4653451f3e8"

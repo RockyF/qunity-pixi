@@ -56,10 +56,22 @@
     /**
      * Created by rockyl on 2020-03-08.
      */
+    var interactionEvents = {
+        pointertap: 'click',
+        pointerdown: 'mouseDown',
+        pointermove: 'mouseMove',
+        pointerup: 'mouseUp',
+        pointerupoutside: 'mouseUpOutside',
+    };
     var EntityAdaptor = /** @class */ (function (_super) {
         __extends(EntityAdaptor, _super);
-        function EntityAdaptor() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function EntityAdaptor(entity, app) {
+            var _this = _super.call(this, entity, app) || this;
+            entity.interactive = true;
+            for (var event in interactionEvents) {
+                entity.on(event, _this._onInteractionEvent, _this);
+            }
+            return _this;
         }
         Object.defineProperty(EntityAdaptor.prototype, "isActive", {
             get: function () {
@@ -68,6 +80,12 @@
             enumerable: true,
             configurable: true
         });
+        EntityAdaptor.prototype._onInteractionEvent = function (e) {
+            if (e.target || e.type === 'pointerupoutside') {
+                var interactEvent = interactionEvents[e.type];
+                this.invokeInteractionEvent(interactEvent, e);
+            }
+        };
         return EntityAdaptor;
     }(qunity.EntityAdaptorBase));
     //# sourceMappingURL=EntityAdaptor.js.map
@@ -121,7 +139,7 @@
             loadResourceFunc: loadResource,
             getResFunc: getRes,
         });
-        pixiApp.ticker.add(mainLoop);
+        PIXI.Ticker.shared.add(mainLoop);
         return app;
     }
     function createEntity(type) {
