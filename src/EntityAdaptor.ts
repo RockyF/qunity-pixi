@@ -19,8 +19,15 @@ const interactionEvents = {
 };
 
 export class EntityAdaptor extends EntityAdaptorBase {
-	get isActive(): boolean {
-		return false;
+	protected readonly _entity: DisplayObject;
+
+	getActive(): boolean {
+		return super.getActive() && this._entity.visible;
+	}
+
+	setActive(v: boolean) {
+		super.setActive(v);
+		this._entity.visible = v;
 	}
 
 	constructor(entity: DisplayObject, app) {

@@ -4,7 +4,9 @@
 import { EntityAdaptorBase } from 'qunity';
 import { DisplayObject } from 'pixi.js';
 export declare class EntityAdaptor extends EntityAdaptorBase {
-    get isActive(): boolean;
+    protected readonly _entity: DisplayObject;
+    getActive(): boolean;
+    setActive(v: boolean): void;
     constructor(entity: DisplayObject, app: any);
     private _onInteractionEvent;
 }

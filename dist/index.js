@@ -74,13 +74,13 @@ var EntityAdaptor = /** @class */ (function (_super) {
         }
         return _this;
     }
-    Object.defineProperty(EntityAdaptor.prototype, "isActive", {
-        get: function () {
-            return false;
-        },
-        enumerable: true,
-        configurable: true
-    });
+    EntityAdaptor.prototype.getActive = function () {
+        return _super.prototype.getActive.call(this) && this._entity.visible;
+    };
+    EntityAdaptor.prototype.setActive = function (v) {
+        _super.prototype.setActive.call(this, v);
+        this._entity.visible = v;
+    };
     EntityAdaptor.prototype._onInteractionEvent = function (e) {
         if (e.target || e.type === 'pointerupoutside') {
             var interactEvent = interactionEvents[e.type];
@@ -89,7 +89,6 @@ var EntityAdaptor = /** @class */ (function (_super) {
     };
     return EntityAdaptor;
 }(qunity.EntityAdaptorBase));
-//# sourceMappingURL=EntityAdaptor.js.map
 
 /**
  * Created by rockyl on 2020-03-08.
@@ -160,6 +159,7 @@ var Component = /** @class */ (function (_super) {
     });
     return Component;
 }(qunity.Component));
+//# sourceMappingURL=wrapper.js.map
 
 exports.Component = Component;
 exports.createEntity = createEntity;
