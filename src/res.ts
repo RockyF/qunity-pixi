@@ -17,7 +17,6 @@ export function loadResource(configs, onProgress?, onComplete?): void {
 		onProgress && onProgress(loaded, total);
 	});
 	loader.load(onComplete);
-
 }
 
 export function getRes(name): any {

@@ -7,6 +7,7 @@ import {traverse} from "./utils";
 import {Application, IEntity, Component as QComponent} from 'qunity'
 import {EntityAdaptor} from "./EntityAdaptor";
 import {getRes, loadResource} from "./res";
+import {protocols} from "./protocols";
 
 let type = "WebGL";
 if (!PIXI.utils.isWebGLSupported()) {
@@ -20,7 +21,9 @@ let app: Application;
 export function launchApp(): Application {
 	app = new Application();
 	app.registerEntityDefs({
-		sprite: PIXI.Sprite,
+		Container: {def: PIXI.Container, isContainer: true},
+		Sprite: {def: PIXI.Sprite},
+		Text: {def: PIXI.Text},
 	});
 
 	let pixiApp = new PIXI.Application({
@@ -34,9 +37,13 @@ export function launchApp(): Application {
 	let mainLoop = app.setupAdaptor({
 		stage: pixiApp.stage,
 		EntityAdaptor,
+		addDisplayFunc: function(node: IPixiEntity, parent: IPixiEntity){
+			parent['addChild'](node);
+		},
 		traverseFunc: traverse,
 		loadResourceFunc: loadResource,
 		getResFunc: getRes,
+		protocols
 	});
 	PIXI.Ticker.shared.add(mainLoop);
 

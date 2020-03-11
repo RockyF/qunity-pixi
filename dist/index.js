@@ -89,6 +89,7 @@ var EntityAdaptor = /** @class */ (function (_super) {
     };
     return EntityAdaptor;
 }(qunity.EntityAdaptorBase));
+//# sourceMappingURL=EntityAdaptor.js.map
 
 /**
  * Created by rockyl on 2020-03-08.
@@ -113,6 +114,27 @@ function getRes(name) {
 //# sourceMappingURL=res.js.map
 
 /**
+ * Created by rockyl on 2020-03-11.
+ */
+var _a;
+var Protocols;
+(function (Protocols) {
+    Protocols["TEXTURE"] = "texture://";
+})(Protocols || (Protocols = {}));
+var protocols = (_a = {},
+    _a[Protocols.TEXTURE] = texture,
+    _a);
+function texture(app, key, value) {
+    var trulyValue;
+    var uuid = value.replace(Protocols.TEXTURE, '');
+    trulyValue = app.getRes(uuid);
+    if (trulyValue) {
+        trulyValue = trulyValue.texture;
+    }
+    return trulyValue;
+}
+
+/**
  * Created by rockyl on 2020-03-08.
  */
 var type = "WebGL";
@@ -124,7 +146,9 @@ var app;
 function launchApp() {
     app = new qunity.Application();
     app.registerEntityDefs({
-        sprite: PIXI.Sprite,
+        Container: { def: PIXI.Container, isContainer: true },
+        Sprite: { def: PIXI.Sprite },
+        Text: { def: PIXI.Text },
     });
     var pixiApp = new PIXI.Application({
         resizeTo: window,
@@ -135,9 +159,13 @@ function launchApp() {
     var mainLoop = app.setupAdaptor({
         stage: pixiApp.stage,
         EntityAdaptor: EntityAdaptor,
+        addDisplayFunc: function (node, parent) {
+            parent['addChild'](node);
+        },
         traverseFunc: traverse,
         loadResourceFunc: loadResource,
         getResFunc: getRes,
+        protocols: protocols
     });
     PIXI.Ticker.shared.add(mainLoop);
     return app;
