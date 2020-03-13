@@ -4,10 +4,15 @@
 
 import PIXI from 'pixi.js'
 
+/**
+ * 先序遍历
+ * @param node
+ * @param hit
+ */
 export function traverse(node, hit: (node: PIXI.DisplayObject) => boolean | void) {
 	let interrupt = hit(node);
 
-	if (node.children && node.children.length > 0) {
+	if (!interrupt && node.children && node.children.length > 0) {
 		for (let child of node.children) {
 			let interrupt = traverse(child, hit);
 			if (interrupt) {
@@ -16,5 +21,21 @@ export function traverse(node, hit: (node: PIXI.DisplayObject) => boolean | void
 		}
 	}
 
+	return interrupt;
+}
+
+/**
+ * 冒泡遍历
+ * @param node
+ * @param hit
+ */
+export function bubbling(node, hit: (node: PIXI.DisplayObject) => boolean | void) {
+	let interrupt = hit(node);
+	while (!interrupt && node.parent) {
+		node = node.parent;
+		if (node) {
+			interrupt = hit(node);
+		}
+	}
 	return interrupt;
 }

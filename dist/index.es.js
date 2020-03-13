@@ -33,15 +33,35 @@ function __extends(d, b) {
 /**
  * Created by rockyl on 2020-03-08.
  */
+/**
+ * 先序遍历
+ * @param node
+ * @param hit
+ */
 function traverse(node, hit) {
     var interrupt = hit(node);
-    if (node.children && node.children.length > 0) {
+    if (!interrupt && node.children && node.children.length > 0) {
         for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
             var child = _a[_i];
             var interrupt_1 = traverse(child, hit);
             if (interrupt_1) {
                 break;
             }
+        }
+    }
+    return interrupt;
+}
+/**
+ * 冒泡遍历
+ * @param node
+ * @param hit
+ */
+function bubbling(node, hit) {
+    var interrupt = hit(node);
+    while (!interrupt && node.parent) {
+        node = node.parent;
+        if (node) {
+            interrupt = hit(node);
         }
     }
     return interrupt;
@@ -142,8 +162,9 @@ function launchApp() {
     app = new Application();
     app.registerEntityDefs({
         Container: { def: PIXI.Container, isContainer: true },
-        Sprite: { def: PIXI.Sprite },
-        Text: { def: PIXI.Text },
+        Sprite: { def: PIXI.Sprite, isContainer: true },
+        Text: { def: PIXI.Text, isContainer: true },
+        Graphics: { def: PIXI.Graphics, isContainer: true },
     });
     var pixiApp = new PIXI.Application({
         resizeTo: window,
@@ -158,11 +179,14 @@ function launchApp() {
             parent['addChild'](node);
         },
         traverseFunc: traverse,
+        bubblingFunc: bubbling,
         loadResourceFunc: loadResource,
         getResFunc: getRes,
         protocols: protocols
     });
-    PIXI.Ticker.shared.add(mainLoop);
+    PIXI.Ticker.shared.add(function (delta) {
+        mainLoop(delta * 1000 / 60);
+    });
     return app;
 }
 function createEntity(type) {
@@ -182,7 +206,6 @@ var Component = /** @class */ (function (_super) {
     });
     return Component;
 }(Component$1));
-//# sourceMappingURL=wrapper.js.map
 
-export { Component, createEntity, launchApp, traverse };
+export { Component, bubbling, createEntity, launchApp, traverse };
 //# sourceMappingURL=index.es.js.map
