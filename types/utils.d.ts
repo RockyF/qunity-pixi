@@ -13,4 +13,4 @@ export declare function traverse(node: any, hit: (node: PIXI.DisplayObject) => b
  * @param node
  * @param hit
  */
-export declare function bubbling(node: any, hit: (node: PIXI.DisplayObject) => boolean | void): void;
+export declare function bubbling(node: any, hit: (node: PIXI.DisplayObject) => boolean | void): boolean | void;

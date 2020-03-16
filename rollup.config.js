@@ -8,10 +8,12 @@ const {uglify} = require('rollup-plugin-uglify');
 
 const name = 'qunity-pixi';
 
-export default {
+const prod = process.env.BUILD === 'production';
+
+const options = {
 	input: 'src/index.ts',
 	output: [
-		{
+		/*{
 			file: `dist/index.js`,
 			sourcemap: true,
 			format: 'cjs',
@@ -28,10 +30,10 @@ export default {
 				'pixi.js': 'PIXI',
 				'qunity': 'qunity',
 			},
-		},
+		},*/
 		{
-			file: `dist/index.umd.js`,
-			sourcemap: true,
+			file: prod ? 'dist/index.min.js' : 'dist/index.js',
+			sourcemap: !prod,
 			format: 'umd',
 			globals: {
 				'pixi.js': 'PIXI',
@@ -52,3 +54,8 @@ export default {
 	external: ['pixi.js', 'qunity', ]
 };
 
+if (prod) {
+	options.plugins.push(uglify({}));
+}
+
+export default options;

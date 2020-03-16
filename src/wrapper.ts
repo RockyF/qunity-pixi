@@ -8,6 +8,7 @@ import {Application, IEntity, Component as QComponent} from 'qunity'
 import {EntityAdaptor} from "./EntityAdaptor";
 import {getRes, loadResource} from "./res";
 import {protocols} from "./protocols";
+import {entityProps} from "./entity-props";
 
 let type = "WebGL";
 if (!PIXI.utils.isWebGLSupported()) {
@@ -18,17 +19,13 @@ PIXI.utils.sayHello(type);
 
 let app: Application;
 
-export function launchApp(): Application {
+export function createApp(): Application {
 
 	app = new Application();
-	app.registerEntityDefs({
-		Container: {def: PIXI.Container, isContainer: true},
-		Sprite: {def: PIXI.Sprite, isContainer: true},
-		Text: {def: PIXI.Text, isContainer: true},
-		Graphics: {def: PIXI.Graphics, isContainer: true},
-	});
+	app.registerEntityDefs(entityProps);
 
 	let pixiApp = new PIXI.Application({
+		antialias: true,
 		resizeTo: window,
 	});
 	pixiApp.renderer.view.style.position = "absolute";

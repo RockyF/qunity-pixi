@@ -4,3 +4,4 @@
 
 export * from './wrapper';
 export * from './utils';
+export * from './entity-props';

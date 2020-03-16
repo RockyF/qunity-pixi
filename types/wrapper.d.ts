@@ -3,7 +3,7 @@
  */
 import PIXI from 'pixi.js';
 import { Application, IEntity, Component as QComponent } from 'qunity';
-export declare function launchApp(): Application;
+export declare function createApp(): Application;
 export interface IPixiEntity extends PIXI.DisplayObject, IEntity {
 }
 export declare function createEntity(type: string): IPixiEntity;
