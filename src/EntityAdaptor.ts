@@ -34,10 +34,23 @@ export class EntityAdaptor extends EntityAdaptorBase {
 		super(entity, app);
 
 		entity.interactive = true;
+		entity.visible = false;
 
 		for (let event in interactionEvents) {
 			entity.on(event, this._onInteractionEvent, this);
 		}
+	}
+
+	applyProxy(): void {
+		super.applyProxy();
+		let entity = this._entity;
+
+		Object.defineProperty(entity, 'stageSize', {
+			get() {
+				let {width, height} = this.entityAdaptor.app.context.pixiApp.renderer;
+				return {width, height};
+			}
+		});
 	}
 
 	private _onInteractionEvent(e: InteractionEvent) {

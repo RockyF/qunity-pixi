@@ -4,9 +4,9 @@
 
 import PIXI from 'pixi.js'
 import {bubbling, traverse} from "./utils";
-import {Application, IEntity, Component as QComponent} from 'qunity'
+import {Application, IEntity, Component as QComponent, injectProp} from 'qunity'
 import {EntityAdaptor} from "./EntityAdaptor";
-import {getRes, loadResource} from "./res";
+import {loadAsset} from "./res";
 import {protocols} from "./protocols";
 import {entityProps} from "./entity-props";
 
@@ -19,17 +19,46 @@ PIXI.utils.sayHello(type);
 
 let app: Application;
 
-export function createApp(): Application {
+export enum Resolution {
+	WIDTH_FIXED,
+	HEIGHT_FIXED,
+}
+
+interface PIXIAppOptions {
+	resolution?: Resolution,
+	designWidth?: number,
+	designHeight?: number,
+	antialias?: boolean,
+	autoResize?: boolean,
+}
+
+const defaultOptions: PIXIAppOptions = {
+	resolution: Resolution.WIDTH_FIXED,
+	designWidth: 750,
+	designHeight: 1334,
+	antialias: true,
+	autoResize: true,
+};
+
+export function createApp(options?: PIXIAppOptions): Application {
+	let _options: PIXIAppOptions = {};
+
+	injectProp(_options, defaultOptions);
+	injectProp(_options, options);
 
 	app = new Application();
 	app.registerEntityDefs(entityProps);
 
 	let pixiApp = new PIXI.Application({
-		antialias: true,
-		resizeTo: window,
+		antialias: _options.antialias,
 	});
-	pixiApp.renderer.view.style.position = "absolute";
-	pixiApp.renderer.view.style.display = "block";
+	let view = pixiApp.renderer.view;
+	view.style.position = "absolute";
+	view.style.display = "block";
+	view.style.width = '100%';
+	view.style.height = '100%';
+
+	adjustSize(pixiApp, _options);
 
 	document.body.appendChild(pixiApp.view);
 
@@ -41,9 +70,11 @@ export function createApp(): Application {
 		},
 		traverseFunc: traverse,
 		bubblingFunc: bubbling,
-		loadResourceFunc: loadResource,
-		getResFunc: getRes,
-		protocols
+		loadAssetFunc: loadAsset,
+		protocols,
+		context: {
+			pixiApp,
+		},
 	});
 	PIXI.Ticker.shared.add(function (delta) {
 		mainLoop(delta * 1000 / 60);
@@ -52,8 +83,8 @@ export function createApp(): Application {
 	return app;
 }
 
-export interface IPixiEntity extends PIXI.DisplayObject, IEntity {
-
+export interface IPixiEntity extends PIXI.Container, IEntity {
+	readonly stageSize: {width: number, height: number};
 }
 
 export function createEntity(type: string): IPixiEntity {
@@ -62,6 +93,33 @@ export function createEntity(type: string): IPixiEntity {
 
 export class Component extends QComponent {
 	get entity(): IPixiEntity {
-		return <IPixiEntity>this.entityAdaptor.entity;
+		return this.entityAdaptor ? <IPixiEntity>this.entityAdaptor.entity : null;
+	}
+}
+
+function adjustSize(pixiApp, options: PIXIAppOptions) {
+	if (options.autoResize) {
+		window.onresize = resize;
+	}
+
+	resize();
+
+	function resize() {
+		const {designWidth, designHeight} = options;
+		let width = designWidth;
+		let height = designHeight;
+		let scale;
+		switch (options.resolution) {
+			case Resolution.WIDTH_FIXED:
+				scale = window.innerWidth / width;
+				height = window.innerHeight / scale;
+				break;
+			case Resolution.HEIGHT_FIXED:
+				scale = window.innerHeight / height;
+				width = window.innerWidth / scale;
+				break;
+		}
+
+		pixiApp.renderer.resize(width, height);
 	}
 }

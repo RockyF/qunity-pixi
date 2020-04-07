@@ -3,22 +3,51 @@
  */
 
 import PIXI from 'pixi.js'
+import {decodeJson5} from "qunity";
 
-export function loadResource(configs, onProgress?, onComplete?): void {
-	let loader = PIXI.Loader.shared;
-	for (let config of configs) {
-		loader.add(config);
+class ResTransform {
+	static pre(resource: PIXI.LoaderResource, next: (...params: any[]) => any) {
+
+		next();
 	}
 
-	let total = configs.length;
-	let loaded = 0;
-	loader.on("progress", function (e) {
-		loaded++;
-		onProgress && onProgress(loaded, total);
-	});
-	loader.load(onComplete);
+	static use(resource: PIXI.LoaderResource, next: (...args: any[]) => void) {
+		switch (resource.extension) {
+			case 'scene':
+			case 'prefab':
+				//resource.data = decodeJson5(resource.data);
+				//let parser = new DOMParser();
+				//resource.data = parser.parseFromString(resource.data, 'text/xml');
+				break;
+		}
+
+		next();
+	}
 }
 
-export function getRes(name): any {
-	return PIXI.Loader.shared.resources[name];
+PIXI.Loader.registerPlugin(ResTransform);
+
+const loaderCache = [];
+
+export function loadAsset(config: any, onComplete: (res, opt) => void): void {
+	let loader;
+	if (loaderCache.length > 0) {
+		loader = loaderCache.pop();
+	} else {
+		loader = new PIXI.Loader;
+	}
+
+	loader.add(config);
+
+	loader.load(onLoaded);
+
+	function onLoaded(loader, resources) {
+		let resource = resources[Object.keys(resources)[0]];
+		let data = resource.textures || resource.texture || resource.data;
+		setTimeout(function () {
+			onComplete && onComplete(data, config);
+		});
+		loader.reset();
+		loaderCache.push(loader);
+	}
 }

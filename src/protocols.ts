@@ -16,7 +16,7 @@ export const protocols = {
 function texture(app: Application, key: string, value: any): any {
 	let trulyValue;
 	const uuid = value.replace(Protocols.TEXTURE, '');
-	trulyValue = app.getRes(uuid);
+	trulyValue = app.getAsset(uuid);
 	if (trulyValue) {
 		trulyValue = trulyValue.texture;
 	}

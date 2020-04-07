@@ -8,5 +8,6 @@ export declare class EntityAdaptor extends EntityAdaptorBase {
     getActive(): boolean;
     setActive(v: boolean): void;
     constructor(entity: DisplayObject, app: any);
+    applyProxy(): void;
     private _onInteractionEvent;
 }

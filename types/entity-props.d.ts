@@ -4,6 +4,7 @@
  * 实体属性列表
  */
 import PIXI from "pixi.js";
+import { Circle, Rect, ShapeBase, Star, StarBezier } from "./shapes";
 export declare const PIXI_TextStyle: {
     align: string[];
     breakWords: string[];
@@ -68,7 +69,7 @@ export declare enum PIXI_BLEND_MODES {
     XOR = 29
 }
 export declare const entityProps: {
-    Container: {
+    Node: {
         def: typeof PIXI.Container;
         isContainer: boolean;
         props: {
@@ -140,6 +141,51 @@ export declare const entityProps: {
         isContainer: boolean;
         props: {
             tint: (string | number)[];
+        };
+    };
+    ShapeBase: {
+        base: string;
+        def: typeof ShapeBase;
+        isContainer: boolean;
+        hidden: boolean;
+        props: {
+            fillColor: (string | number)[];
+            strokeColor: (string | number)[];
+            strokeWidth: (string | number)[];
+        };
+    };
+    Rect: {
+        base: string;
+        def: typeof Rect;
+        isContainer: boolean;
+        props: {
+            borderRadius: (string | number)[];
+        };
+    };
+    Circle: {
+        base: string;
+        def: typeof Circle;
+        isContainer: boolean;
+        props: {};
+    };
+    Star: {
+        base: string;
+        def: typeof Star;
+        isContainer: boolean;
+        props: {
+            points: (string | number)[];
+            innerRadius: string[];
+            starRotation: (string | number)[];
+        };
+    };
+    StarBezier: {
+        base: string;
+        def: typeof StarBezier;
+        isContainer: boolean;
+        props: {
+            points: (string | number)[];
+            innerRadius: string[];
+            starRotation: (string | number)[];
         };
     };
 };

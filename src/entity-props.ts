@@ -5,7 +5,7 @@
  */
 
 import PIXI from "pixi.js";
-import {Circle, Rect, ShapeBase} from "./shapes";
+import {Circle, Rect, ShapeBase, Star, StarBezier} from "./shapes";
 
 export const PIXI_TextStyle = {
 	align: ['string', ''],
@@ -74,7 +74,7 @@ export enum PIXI_BLEND_MODES {
 }
 
 export const entityProps = {
-	Container: {
+	Node: {
 		def: PIXI.Container,
 		isContainer: true,
 		props: {
@@ -94,7 +94,7 @@ export const entityProps = {
 		},
 	},
 	Sprite: {
-		base: 'Container',
+		base: 'Node',
 		def: PIXI.Sprite,
 		isContainer: true,
 		props: {
@@ -113,7 +113,7 @@ export const entityProps = {
 		},
 	},
 	Graphics: {
-		base: 'Container',
+		base: 'Node',
 		def: PIXI.Graphics,
 		isContainer: true,
 		props: {
@@ -145,6 +145,26 @@ export const entityProps = {
 		isContainer: true,
 		props: {
 
+		},
+	},
+	Star: {
+		base: 'ShapeBase',
+		def: Star,
+		isContainer: true,
+		props: {
+			points: ['number', 5],
+			innerRadius: ['number'],
+			starRotation: ['number', 0],
+		},
+	},
+	StarBezier: {
+		base: 'ShapeBase',
+		def: StarBezier,
+		isContainer: true,
+		props: {
+			points: ['number', 5],
+			innerRadius: ['number'],
+			starRotation: ['number', 0],
 		},
 	},
 };

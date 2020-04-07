@@ -95,6 +95,7 @@
         function EntityAdaptor(entity, app) {
             var _this = _super.call(this, entity, app) || this;
             entity.interactive = true;
+            entity.visible = false;
             for (var event in interactionEvents) {
                 entity.on(event, _this._onInteractionEvent, _this);
             }
@@ -106,6 +107,16 @@
         EntityAdaptor.prototype.setActive = function (v) {
             _super.prototype.setActive.call(this, v);
             this._entity.visible = v;
+        };
+        EntityAdaptor.prototype.applyProxy = function () {
+            _super.prototype.applyProxy.call(this);
+            var entity = this._entity;
+            Object.defineProperty(entity, 'stageSize', {
+                get: function () {
+                    var _a = this.entityAdaptor.app.context.pixiApp.renderer, width = _a.width, height = _a.height;
+                    return { width: width, height: height };
+                }
+            });
         };
         EntityAdaptor.prototype._onInteractionEvent = function (e) {
             if (e.target || e.type === 'pointerupoutside') {
@@ -120,22 +131,46 @@
     /**
      * Created by rockyl on 2020-03-08.
      */
-    function loadResource(configs, onProgress, onComplete) {
-        var loader = PIXI$1.Loader.shared;
-        for (var _i = 0, configs_1 = configs; _i < configs_1.length; _i++) {
-            var config = configs_1[_i];
-            loader.add(config);
+    var ResTransform = /** @class */ (function () {
+        function ResTransform() {
         }
-        var total = configs.length;
-        var loaded = 0;
-        loader.on("progress", function (e) {
-            loaded++;
-            onProgress && onProgress(loaded, total);
-        });
-        loader.load(onComplete);
-    }
-    function getRes(name) {
-        return PIXI$1.Loader.shared.resources[name];
+        ResTransform.pre = function (resource, next) {
+            next();
+        };
+        ResTransform.use = function (resource, next) {
+            switch (resource.extension) {
+                case 'scene':
+                case 'prefab':
+                    //resource.data = decodeJson5(resource.data);
+                    //let parser = new DOMParser();
+                    //resource.data = parser.parseFromString(resource.data, 'text/xml');
+                    break;
+            }
+            next();
+        };
+        return ResTransform;
+    }());
+    PIXI$1.Loader.registerPlugin(ResTransform);
+    var loaderCache = [];
+    function loadAsset(config, onComplete) {
+        var loader;
+        if (loaderCache.length > 0) {
+            loader = loaderCache.pop();
+        }
+        else {
+            loader = new PIXI$1.Loader;
+        }
+        loader.add(config);
+        loader.load(onLoaded);
+        function onLoaded(loader, resources) {
+            var resource = resources[Object.keys(resources)[0]];
+            var data = resource.textures || resource.texture || resource.data;
+            setTimeout(function () {
+                onComplete && onComplete(data, config);
+            });
+            loader.reset();
+            loaderCache.push(loader);
+        }
     }
     //# sourceMappingURL=res.js.map
 
@@ -153,7 +188,7 @@
     function texture(app, key, value) {
         var trulyValue;
         var uuid = value.replace(Protocols.TEXTURE, '');
-        trulyValue = app.getRes(uuid);
+        trulyValue = app.getAsset(uuid);
         if (trulyValue) {
             trulyValue = trulyValue.texture;
         }
@@ -165,6 +200,7 @@
      * Created by rockyl on 2020-03-16.
      */
     var Graphics = PIXI.Graphics;
+    var ObservablePoint = PIXI.ObservablePoint;
     /**
      * 图形基类
      */
@@ -174,26 +210,59 @@
             var _this = _super.call(this) || this;
             _this.__fieldDirty = true;
             _this.fillColor = '0xffffff';
+            _this.fillAlpha = 1;
             _this.strokeColor = 0;
+            _this.strokeAlpha = 1;
             _this.strokeWidth = 0;
+            _this.strokeAlignment = 0.5;
             _this.shapeWidth = 0;
             _this.shapeHeight = 0;
+            _this.directionLineWidth = 0;
+            _this._anchor = new ObservablePoint(_this._onAnchorUpdate, _this);
             _this.nextTick = function () {
                 if (_this.__fieldDirty) {
                     _this.__fieldDirty = false;
-                    var _a = _this, fillColor = _a.fillColor, strokeColor = _a.strokeColor, strokeWidth = _a.strokeWidth;
+                    var _a = _this, fillColor = _a.fillColor, fillAlpha = _a.fillAlpha, strokeColor = _a.strokeColor, strokeWidth = _a.strokeWidth, strokeAlpha = _a.strokeAlpha, strokeAlignment = _a.strokeAlignment;
                     _this.clear();
-                    _this.beginFill(fillColor);
+                    _this.beginFill(fillColor, fillAlpha);
                     if (strokeWidth > 0) {
-                        _this.lineStyle(strokeWidth, strokeColor);
+                        _this.lineStyle(strokeWidth, strokeColor, strokeAlpha, strokeAlignment);
                     }
                     _this.redraw();
                     _this.endFill();
+                    if (_this.directionLineWidth > 0) {
+                        _this.drawDirectionLine();
+                    }
                 }
             };
+            _this._anchor = new ObservablePoint(_this._onAnchorUpdate, _this);
             return _this;
         }
-        ShapeBase.prototype.onModify = function (value, key) {
+        Object.defineProperty(ShapeBase.prototype, "anchor", {
+            get: function () {
+                return this._anchor;
+            },
+            set: function (value) {
+                this._anchor.copyFrom(value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ShapeBase.prototype, "anchorOffset", {
+            get: function () {
+                var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight, _b = _a._anchor, ax = _b.x, ay = _b.y;
+                return {
+                    x: -shapeWidth * ax,
+                    y: -shapeHeight * ay,
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ShapeBase.prototype._onAnchorUpdate = function () {
+            this.$onModify();
+        };
+        ShapeBase.prototype.$onModify = function (value, key) {
             this.__fieldDirty = true;
             if (this._t) {
                 clearTimeout(this._t);
@@ -201,21 +270,39 @@
             }
             this._t = setTimeout(this.nextTick);
         };
+        ShapeBase.prototype.drawDirectionLine = function () {
+            var _a = this, _b = _a.pivot, x = _b.x, y = _b.y, directionLineWidth = _a.directionLineWidth;
+            this.lineStyle(directionLineWidth, 0xFFFFFF - this.fillColor);
+            this.moveTo(x, y);
+            this.lineTo(x + this.shapeWidth / 2, y);
+        };
         __decorate([
             qunity.dirtyFieldTrigger
         ], ShapeBase.prototype, "fillColor", void 0);
         __decorate([
             qunity.dirtyFieldTrigger
+        ], ShapeBase.prototype, "fillAlpha", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
         ], ShapeBase.prototype, "strokeColor", void 0);
         __decorate([
             qunity.dirtyFieldTrigger
+        ], ShapeBase.prototype, "strokeAlpha", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
         ], ShapeBase.prototype, "strokeWidth", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], ShapeBase.prototype, "strokeAlignment", void 0);
         __decorate([
             qunity.dirtyFieldTrigger
         ], ShapeBase.prototype, "shapeWidth", void 0);
         __decorate([
             qunity.dirtyFieldTrigger
         ], ShapeBase.prototype, "shapeHeight", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], ShapeBase.prototype, "directionLineWidth", void 0);
         return ShapeBase;
     }(Graphics));
     /**
@@ -229,12 +316,12 @@
             return _this;
         }
         Rect.prototype.redraw = function () {
-            var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight, borderRadius = _a.borderRadius;
+            var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight, borderRadius = _a.borderRadius, _b = _a.anchorOffset, x = _b.x, y = _b.y;
             if (borderRadius > 0) {
-                this.drawRoundedRect(0, 0, shapeWidth, shapeHeight, borderRadius);
+                this.drawRoundedRect(x, y, shapeWidth, shapeHeight, borderRadius);
             }
             else {
-                this.drawRect(0, 0, shapeWidth, shapeHeight);
+                this.drawRect(x, y, shapeWidth, shapeHeight);
             }
         };
         __decorate([
@@ -251,11 +338,92 @@
             return _super !== null && _super.apply(this, arguments) || this;
         }
         Circle.prototype.redraw = function () {
-            var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight;
+            var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight, _b = _a.anchorOffset, x = _b.x, y = _b.y;
             var radius = Math.min(shapeWidth, shapeHeight) / 2;
-            this.drawCircle(radius, radius, radius);
+            this.drawCircle(radius - x, radius - y, radius);
         };
         return Circle;
+    }(ShapeBase));
+    /**
+     * 星型
+     */
+    var Star = /** @class */ (function (_super) {
+        __extends(Star, _super);
+        function Star() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.points = 5;
+            _this.starRotation = 0;
+            return _this;
+        }
+        Star.prototype.redraw = function () {
+            var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight, _b = _a.anchorOffset, x = _b.x, y = _b.y;
+            var radius = Math.min(shapeWidth, shapeHeight) / 2;
+            var _c = this, points = _c.points, innerRadius = _c.innerRadius, starRotation = _c.starRotation;
+            var args = [radius - x, radius - y, points, radius];
+            if (innerRadius !== undefined) {
+                args.push(innerRadius);
+            }
+            else if (starRotation !== undefined) {
+                args.push(undefined, starRotation);
+            }
+            this.drawStar.apply(this, args);
+        };
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], Star.prototype, "points", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], Star.prototype, "innerRadius", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], Star.prototype, "starRotation", void 0);
+        return Star;
+    }(ShapeBase));
+    /**
+     * 曲线星型
+     */
+    var StarBezier = /** @class */ (function (_super) {
+        __extends(StarBezier, _super);
+        function StarBezier() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.points = 5;
+            _this.starRotation = 0;
+            return _this;
+        }
+        StarBezier.prototype.redraw = function () {
+            var _a = this, shapeWidth = _a.shapeWidth, shapeHeight = _a.shapeHeight, _b = _a.anchorOffset, x = _b.x, y = _b.y;
+            var radius = Math.min(shapeWidth, shapeHeight) / 2;
+            var _c = this, points = _c.points, innerRadius = _c.innerRadius, starRotation = _c.starRotation;
+            if (innerRadius === undefined) {
+                innerRadius = radius / 2;
+            }
+            var perRadius = Math.PI * 2 / points;
+            var toX = Math.cos(starRotation) * radius + radius;
+            var toY = Math.sin(starRotation) * radius + radius;
+            for (var i = 0; i < points; i++) {
+                if (i === 0) {
+                    this.moveTo(toX, toY);
+                }
+                var cpR = starRotation + perRadius * (i + 0.5);
+                var cpX = Math.cos(cpR) * innerRadius + radius;
+                var cpY = Math.sin(cpR) * innerRadius + radius;
+                var toR = starRotation + perRadius * (i + 1);
+                toX = Math.cos(toR) * radius + radius;
+                toY = Math.sin(toR) * radius + radius;
+                this.quadraticCurveTo(cpX, cpY, toX, toY);
+            }
+            this.closePath();
+        };
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], StarBezier.prototype, "points", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], StarBezier.prototype, "innerRadius", void 0);
+        __decorate([
+            qunity.dirtyFieldTrigger
+        ], StarBezier.prototype, "starRotation", void 0);
+        return StarBezier;
     }(ShapeBase));
     //# sourceMappingURL=shapes.js.map
 
@@ -328,7 +496,7 @@
         PIXI_BLEND_MODES[PIXI_BLEND_MODES["XOR"] = 29] = "XOR";
     })(exports.PIXI_BLEND_MODES || (exports.PIXI_BLEND_MODES = {}));
     var entityProps = {
-        Container: {
+        Node: {
             def: PIXI$1.Container,
             isContainer: true,
             props: {
@@ -348,7 +516,7 @@
             },
         },
         Sprite: {
-            base: 'Container',
+            base: 'Node',
             def: PIXI$1.Sprite,
             isContainer: true,
             props: {
@@ -367,7 +535,7 @@
             },
         },
         Graphics: {
-            base: 'Container',
+            base: 'Node',
             def: PIXI$1.Graphics,
             isContainer: true,
             props: {
@@ -399,6 +567,26 @@
             isContainer: true,
             props: {},
         },
+        Star: {
+            base: 'ShapeBase',
+            def: Star,
+            isContainer: true,
+            props: {
+                points: ['number', 5],
+                innerRadius: ['number'],
+                starRotation: ['number', 0],
+            },
+        },
+        StarBezier: {
+            base: 'ShapeBase',
+            def: StarBezier,
+            isContainer: true,
+            props: {
+                points: ['number', 5],
+                innerRadius: ['number'],
+                starRotation: ['number', 0],
+            },
+        },
     };
 
     /**
@@ -410,15 +598,32 @@
     }
     PIXI$1.utils.sayHello(type);
     var app;
-    function createApp() {
+    (function (Resolution) {
+        Resolution[Resolution["WIDTH_FIXED"] = 0] = "WIDTH_FIXED";
+        Resolution[Resolution["HEIGHT_FIXED"] = 1] = "HEIGHT_FIXED";
+    })(exports.Resolution || (exports.Resolution = {}));
+    var defaultOptions = {
+        resolution: exports.Resolution.WIDTH_FIXED,
+        designWidth: 750,
+        designHeight: 1334,
+        antialias: true,
+        autoResize: true,
+    };
+    function createApp(options) {
+        var _options = {};
+        qunity.injectProp(_options, defaultOptions);
+        qunity.injectProp(_options, options);
         app = new qunity.Application();
         app.registerEntityDefs(entityProps);
         var pixiApp = new PIXI$1.Application({
-            antialias: true,
-            resizeTo: window,
+            antialias: _options.antialias,
         });
-        pixiApp.renderer.view.style.position = "absolute";
-        pixiApp.renderer.view.style.display = "block";
+        var view = pixiApp.renderer.view;
+        view.style.position = "absolute";
+        view.style.display = "block";
+        view.style.width = '100%';
+        view.style.height = '100%';
+        adjustSize(pixiApp, _options);
         document.body.appendChild(pixiApp.view);
         var mainLoop = app.setupAdaptor({
             stage: pixiApp.stage,
@@ -428,9 +633,11 @@
             },
             traverseFunc: traverse,
             bubblingFunc: bubbling,
-            loadResourceFunc: loadResource,
-            getResFunc: getRes,
-            protocols: protocols
+            loadAssetFunc: loadAsset,
+            protocols: protocols,
+            context: {
+                pixiApp: pixiApp,
+            },
         });
         PIXI$1.Ticker.shared.add(function (delta) {
             mainLoop(delta * 1000 / 60);
@@ -447,13 +654,36 @@
         }
         Object.defineProperty(Component.prototype, "entity", {
             get: function () {
-                return this.entityAdaptor.entity;
+                return this.entityAdaptor ? this.entityAdaptor.entity : null;
             },
             enumerable: true,
             configurable: true
         });
         return Component;
     }(qunity.Component));
+    function adjustSize(pixiApp, options) {
+        if (options.autoResize) {
+            window.onresize = resize;
+        }
+        resize();
+        function resize() {
+            var designWidth = options.designWidth, designHeight = options.designHeight;
+            var width = designWidth;
+            var height = designHeight;
+            var scale;
+            switch (options.resolution) {
+                case exports.Resolution.WIDTH_FIXED:
+                    scale = window.innerWidth / width;
+                    height = window.innerHeight / scale;
+                    break;
+                case exports.Resolution.HEIGHT_FIXED:
+                    scale = window.innerHeight / height;
+                    width = window.innerWidth / scale;
+                    break;
+            }
+            pixiApp.renderer.resize(width, height);
+        }
+    }
     //# sourceMappingURL=wrapper.js.map
 
     exports.Component = Component;
