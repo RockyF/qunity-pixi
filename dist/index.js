@@ -189,12 +189,11 @@
         var trulyValue;
         var uuid = value.replace(Protocols.TEXTURE, '');
         trulyValue = app.getAsset(uuid);
-        if (trulyValue) {
+        /*if (trulyValue) {
             trulyValue = trulyValue.texture;
-        }
+        }*/
         return trulyValue;
     }
-    //# sourceMappingURL=protocols.js.map
 
     /**
      * Created by rockyl on 2020-03-16.
@@ -588,6 +587,7 @@
             },
         },
     };
+    //# sourceMappingURL=entity-props.js.map
 
     /**
      * Created by rockyl on 2020-03-08.
