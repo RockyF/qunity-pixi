@@ -264,11 +264,12 @@
         };
         ShapeBase.prototype.$onModify = function (value, key) {
             this.__fieldDirty = true;
-            if (this._t) {
+            /*if (this._t) {
                 clearTimeout(this._t);
                 this._t = null;
             }
-            this._t = setTimeout(this.nextTick);
+            this._t = setTimeout(this.nextTick);*/
+            this.nextTick && this.nextTick();
         };
         ShapeBase.prototype.drawDirectionLine = function () {
             var _a = this, _b = _a.pivot, x = _b.x, y = _b.y, directionLineWidth = _a.directionLineWidth;
@@ -425,7 +426,6 @@
         ], StarBezier.prototype, "starRotation", void 0);
         return StarBezier;
     }(ShapeBase));
-    //# sourceMappingURL=shapes.js.map
 
     /**
      * Created by rockyl on 2020-03-13.

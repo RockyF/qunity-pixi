@@ -66,11 +66,12 @@ export abstract class ShapeBase extends Graphics {
 	private $onModify(value?, key?) {
 		this.__fieldDirty = true;
 
-		if (this._t) {
+		/*if (this._t) {
 			clearTimeout(this._t);
 			this._t = null;
 		}
-		this._t = setTimeout(this.nextTick);
+		this._t = setTimeout(this.nextTick);*/
+		this.nextTick && this.nextTick();
 	}
 
 	private nextTick = () => {
