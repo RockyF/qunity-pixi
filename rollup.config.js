@@ -13,34 +13,34 @@ const prod = process.env.BUILD === 'production';
 const options = {
 	input: 'src/index.ts',
 	output: [
-		/*{
-			file: `dist/index.js`,
+		{
+			file: prod ? 'dist/bundle.umd.cjs.js' : 'dist/bundle.cjs.js',
 			sourcemap: true,
 			format: 'cjs',
 			globals: {
 				'pixi.js': 'PIXI',
 				'qunity': 'qunity',
-			}
+			},
 		},
 		{
-			file: `dist/index.es.js`,
+			file: prod ? 'dist/bundle.umd.esm.js' : 'dist/bundle.esm.js',
 			sourcemap: true,
-			format: 'es',
+			format: 'esm',
 			globals: {
 				'pixi.js': 'PIXI',
 				'qunity': 'qunity',
 			},
-		},*/
+		},
 		{
-			file: prod ? 'dist/index.min.js' : 'dist/index.js',
+			file: prod ? 'dist/bundle.umd.min.js' : 'dist/bundle.umd.js',
 			sourcemap: !prod,
 			format: 'umd',
+			name,
 			globals: {
 				'pixi.js': 'PIXI',
 				'qunity': 'qunity',
 			},
-			name,
-		}
+		},
 	],
 	plugins: [
 		resolve({

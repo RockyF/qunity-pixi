@@ -2,9 +2,9 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('pixi.js'), require('qunity')) :
     typeof define === 'function' && define.amd ? define(['exports', 'pixi.js', 'qunity'], factory) :
     (global = global || self, factory(global['qunity-pixi'] = {}, global.PIXI, global.qunity));
-}(this, function (exports, PIXI$1, qunity) { 'use strict';
+}(this, function (exports, PIXI, qunity) { 'use strict';
 
-    PIXI$1 = PIXI$1 && PIXI$1.hasOwnProperty('default') ? PIXI$1['default'] : PIXI$1;
+    PIXI = PIXI && PIXI.hasOwnProperty('default') ? PIXI['default'] : PIXI;
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
@@ -150,7 +150,7 @@
         };
         return ResTransform;
     }());
-    PIXI$1.Loader.registerPlugin(ResTransform);
+    PIXI.Loader.registerPlugin(ResTransform);
     var loaderCache = [];
     function loadAsset(config, onComplete) {
         var loader;
@@ -158,7 +158,7 @@
             loader = loaderCache.pop();
         }
         else {
-            loader = new PIXI$1.Loader;
+            loader = new PIXI.Loader;
         }
         loader.add(config);
         loader.load(onLoaded);
@@ -199,8 +199,6 @@
     /**
      * Created by rockyl on 2020-03-16.
      */
-    var Graphics = PIXI.Graphics;
-    var ObservablePoint = PIXI.ObservablePoint;
     /**
      * 图形基类
      */
@@ -218,7 +216,7 @@
             _this.shapeWidth = 0;
             _this.shapeHeight = 0;
             _this.directionLineWidth = 0;
-            _this._anchor = new ObservablePoint(_this._onAnchorUpdate, _this);
+            _this._anchor = new PIXI.ObservablePoint(_this._onAnchorUpdate, _this);
             _this.nextTick = function () {
                 if (_this.__fieldDirty) {
                     _this.__fieldDirty = false;
@@ -235,7 +233,7 @@
                     }
                 }
             };
-            _this._anchor = new ObservablePoint(_this._onAnchorUpdate, _this);
+            _this._anchor = new PIXI.ObservablePoint(_this._onAnchorUpdate, _this);
             return _this;
         }
         Object.defineProperty(ShapeBase.prototype, "anchor", {
@@ -305,7 +303,7 @@
             qunity.dirtyFieldTrigger
         ], ShapeBase.prototype, "directionLineWidth", void 0);
         return ShapeBase;
-    }(Graphics));
+    }(PIXI.Graphics));
     /**
      * 矩形
      */
@@ -497,7 +495,7 @@
     })(exports.PIXI_BLEND_MODES || (exports.PIXI_BLEND_MODES = {}));
     var entityProps = {
         Node: {
-            def: PIXI$1.Container,
+            def: PIXI.Container,
             isContainer: true,
             props: {
                 position: ['vector2', [0, 0]],
@@ -517,7 +515,7 @@
         },
         Sprite: {
             base: 'Node',
-            def: PIXI$1.Sprite,
+            def: PIXI.Sprite,
             isContainer: true,
             props: {
                 blendMode: ['enum', 'NORMAL', exports.PIXI_BLEND_MODES],
@@ -527,7 +525,7 @@
         },
         Text: {
             base: 'Sprite',
-            def: PIXI$1.Text,
+            def: PIXI.Text,
             isContainer: true,
             props: {
                 text: ['string'],
@@ -536,7 +534,7 @@
         },
         Graphics: {
             base: 'Node',
-            def: PIXI$1.Graphics,
+            def: PIXI.Graphics,
             isContainer: true,
             props: {
                 tint: ['color', 0xFFFFFF],
@@ -594,10 +592,10 @@
      * Created by rockyl on 2020-03-08.
      */
     var type = "WebGL";
-    if (!PIXI$1.utils.isWebGLSupported()) {
+    if (!PIXI.utils.isWebGLSupported()) {
         type = "canvas";
     }
-    PIXI$1.utils.sayHello(type);
+    PIXI.utils.sayHello(type);
     var app;
     (function (Resolution) {
         Resolution[Resolution["WIDTH_FIXED"] = 0] = "WIDTH_FIXED";
@@ -616,7 +614,7 @@
         qunity.injectProp(_options, options);
         app = new qunity.Application();
         app.registerEntityDefs(entityProps);
-        var pixiApp = new PIXI$1.Application({
+        var pixiApp = new PIXI.Application({
             antialias: _options.antialias,
         });
         var view = pixiApp.renderer.view;
@@ -640,7 +638,7 @@
                 pixiApp: pixiApp,
             },
         });
-        PIXI$1.Ticker.shared.add(function (delta) {
+        PIXI.Ticker.shared.add(function (delta) {
             mainLoop(delta * 1000 / 60);
         });
         return app;
@@ -698,4 +696,4 @@
     Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=bundle.umd.js.map

@@ -4,8 +4,6 @@
 		"outDir": "dist-distributed",
 		"experimentalDecorators": true,
 		"sourceMap": true,
-		"declarationDir": "types",
-		"declaration": true,
 		"esModuleInterop": true,
 		"lib": [
 			"es5",

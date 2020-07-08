@@ -3,13 +3,12 @@
  */
 
 import {dirtyFieldTrigger} from "qunity";
-import Graphics = PIXI.Graphics;
-import ObservablePoint = PIXI.ObservablePoint;
+import PIXI from 'pixi.js'
 
 /**
  * 图形基类
  */
-export abstract class ShapeBase extends Graphics {
+export abstract class ShapeBase extends PIXI.Graphics {
 	protected __fieldDirty = true;
 
 	private _t;
@@ -33,9 +32,9 @@ export abstract class ShapeBase extends Graphics {
 	@dirtyFieldTrigger
 	directionLineWidth: number = 0;
 
-	protected _anchor: ObservablePoint = new ObservablePoint(this._onAnchorUpdate, this);
+	protected _anchor: PIXI.ObservablePoint = new PIXI.ObservablePoint(this._onAnchorUpdate, this);
 
-	get anchor(): ObservablePoint {
+	get anchor(): PIXI.ObservablePoint {
 		return this._anchor;
 	}
 
@@ -56,7 +55,7 @@ export abstract class ShapeBase extends Graphics {
 	constructor() {
 		super();
 
-		this._anchor = new ObservablePoint(this._onAnchorUpdate, this);
+		this._anchor = new PIXI.ObservablePoint(this._onAnchorUpdate, this);
 	}
 
 	private _onAnchorUpdate(): void {
